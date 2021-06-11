@@ -6,11 +6,11 @@ module.exports = (req,res,next) => {
   // decode token
   if (token) {
     // verifies secret and checks exp
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, user) {
         if (err) {
             return res.status(401).json({"error": true, "message": 'Unauthorized access.' });
         }
-      req.decoded = decoded;
+      req.user = user;
       next();
     });
   } else {

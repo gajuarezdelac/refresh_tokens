@@ -1,12 +1,7 @@
 const jwt = require('jsonwebtoken')
 const config = require('../config')
-
 const Users = require('../models/UserModel');
 const bcrypt = require('bcrypt');
-
-
-
-
 
 const AuthController = { 
 
@@ -29,53 +24,47 @@ const AuthController = {
       name, email, password: passwordHash
     });
 
-    // Const token
-    const token = jwt.sign(newUser, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
-    const refreshToken = jwt.sign(newUser, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
-     
     await newUser.save();
 
+    // Const token
+    const token = jwt.sign({name, email}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
+    const refreshToken = jwt.sign({name, email}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
+     
     res.status(200).json({
        token,
       refreshToken,
       "refreshTokenLife": config.refreshTokenLife
    });
-
-
   },
 
   login: async (req, res) => {
       try {
 
-        const postData = req.body;
+        const {email, password} = req.body;
 
-        const user = {
-            "email": postData.email,
-            "password": postData.password
-        }
+        const user = await Users.findOne({email});
+        if(!user) res.status(400).json({msg: 'El correo no existe!'});
 
-        const userSearch = await Users.findOne(postData.email);
-        if(!userSearch) res.status(400).json({msg: 'El correo no existe!'});
-
-        const isMatch = await bcrypt.compare(postData.password, userSearch.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch) return res.status(400).json({msg: "Password is incorrect."});
 
-        // do the database authentication here, with user name and password combination.
-        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
-        const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
-    
+      
+    // Const token
+       const token = jwt.sign({id: user._id,name: user.name ,email}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
+       const refreshToken = jwt.sign({id: user._id,name: user.name ,email}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
+
         res.status(200).json({
-          "status": true,
-           token,
+          token,
           refreshToken,
-          "refreshTokenLife": config.refreshTokenLife
+         "refreshTokenLife": config.refreshTokenLife
       });
 
       } catch (err) {
         return res.status(500).json({msg: err.message})
     }
   },
-
+  
+  // Refresh tokens
   refreshToken: async  (req,res) => {
     try {
      // refresh the damn token
@@ -85,13 +74,10 @@ const AuthController = {
        
       const user = {
             "email": postData.email,
-            "name": postData.name
+            "password": postData.password
       }
 
-
-
     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
-        
 
         res.status(200).json({
           "token": token,
@@ -99,23 +85,21 @@ const AuthController = {
         });        
 
 
-    } else { res.status(500).json({msg: 'Invalid request'}) } 
+    } else { res.status(500).json({msg: 'Invalid request'}) }   
+  } catch (err) { return res.status(500).json({msg: err.message})}   
+ },
 
-
-  } catch (err) {
-      return res.status(500).json({msg: err.message})
-   }
-  },
-
-  validateToken: async (req, res) => {
+ getUserInfo: async (req, res) => {
   try {
 
-    res.status(200).json({msg: 'Token validate'})
-  
+      const user = await Users.findById(req.user.id).select('-password');
+      res.json(user);
+      
   } catch (err) {
-    return res.status(500).json({msg: err.message})
-   } 
-  }
+          return res.status(400).json({msg: err.message})
+      }
+  },
+
 }
 
 function validateEmail(email) {

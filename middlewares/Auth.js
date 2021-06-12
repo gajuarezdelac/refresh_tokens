@@ -8,7 +8,7 @@ module.exports = (req,res,next) => {
     // verifies secret and checks exp
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, user) {
         if (err) {
-            return res.status(401).json({"error": true, "message": 'Unauthorized access.' });
+            return res.status(401).json({"error": true, "message": err });
         }
       req.user = user;
       next();

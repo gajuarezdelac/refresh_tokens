@@ -8,7 +8,6 @@ const AuthController = {
   register: async (req, res) => {
 
     // Params
-
     const {name, email, password} = req.body;
 
     if(!name || !email || !password) return res.status(400).json({msg: 'Faltan campos'});
@@ -71,27 +70,25 @@ const AuthController = {
     const postData = req.body
     // if refresh token exists
     if(postData.refreshToken) {
-       
-      const user = {
-            "email": postData.email,
-            "password": postData.password
-      }
-
-    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
+    
+      const user = jwt.verify(postData.refreshToken,process.env.REFRESH_TOKEN_SECRET);
+      
+      const token = jwt.sign({id: user.id, name: user.name, email: user.email}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
+      const refreshToken = jwt.sign({id: user.id, name: user.name, email: user.email}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
 
         res.status(200).json({
-          "token": token,
-          "expiresIn": config.tokenLife
+          token,
+          refreshToken,
+          "expiresIn": config.tokenLife,
         });        
 
 
     } else { res.status(500).json({msg: 'Invalid request'}) }   
   } catch (err) { return res.status(500).json({msg: err.message})}   
- },
+  },
 
  getUserInfo: async (req, res) => {
   try {
-
       const user = await Users.findById(req.user.id).select('-password');
       res.json(user);
       

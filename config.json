@@ -1,6 +1,6 @@
 {
     "secret": "some-secret-shit-goes-here",
     "refreshTokenSecret": "some-secret-refresh-token-shit",
-    "tokenLife": 400,
-    "refreshTokenLife": 400
-}
+    "tokenLife": 900,
+    "refreshTokenLife": 900
+}   

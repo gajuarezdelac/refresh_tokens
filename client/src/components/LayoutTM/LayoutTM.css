@@ -1,0 +1,54 @@
+
+
+.flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 50px 0px 0px;
+  cursor: pointer;
+}
+
+
+.avatar {
+font-size: 2.5em;
+  font-weight: 300;
+  letter-spacing: 3px;
+}
+
+.flex-job{
+  display: flex;
+  justify-content:flex-start;
+}
+
+
+.trigger {
+  font-size: 18px;
+  line-height: 64px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.trigger:hover {
+  color: #ca1313;
+}
+
+.logo {
+  color: #FFFF;
+}
+
+.container-logo-interna {
+  text-align:center;
+  margin: 0 auto;
+}
+
+
+.site-layout .site-layout-background {
+  background: #fff;
+}
+
+.titulo-seccion {
+  font-weight:bold;
+  font-size: 2rem;
+  color: black;
+}

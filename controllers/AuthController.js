@@ -30,10 +30,12 @@ const AuthController = {
     const refreshToken = jwt.sign({name, email}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
      
     res.status(200).json({
-       token,
+      token,
       refreshToken,
       "refreshTokenLife": config.refreshTokenLife
    });
+
+
   },
 
   login: async (req, res) => {
@@ -45,7 +47,7 @@ const AuthController = {
         if(!user) res.status(400).json({msg: 'El correo no existe!'});
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if(!isMatch) return res.status(400).json({msg: "Password is incorrect."});
+        if(!isMatch) return res.status(400).json({msg: "Datos incorrectos!"});
 
       
     // Const token
@@ -53,9 +55,9 @@ const AuthController = {
        const refreshToken = jwt.sign({id: user._id,name: user.name ,email}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
 
         res.status(200).json({
-          token,
-          refreshToken,
-         "refreshTokenLife": config.refreshTokenLife
+          "access_token": token,
+          "expires_In": config.tokenLife,
+          "refresh_token":refreshToken,
       });
 
       } catch (err) {
@@ -69,17 +71,17 @@ const AuthController = {
      // refresh the damn token
     const postData = req.body
     // if refresh token exists
-    if(postData.refreshToken) {
+    if(postData.access_token) {
     
-      const user = jwt.verify(postData.refreshToken,process.env.REFRESH_TOKEN_SECRET);
-      
+      const user = jwt.verify(postData.access_token,process.env.REFRESH_TOKEN_SECRET);
+      console.log(user);
       const token = jwt.sign({id: user.id, name: user.name, email: user.email}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.tokenLife})
       const refreshToken = jwt.sign({id: user.id, name: user.name, email: user.email}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: config.refreshTokenLife})
 
         res.status(200).json({
-          token,
-          refreshToken,
-          "expiresIn": config.tokenLife,
+          "access_token": token,
+          "expires_In": config.tokenLife,
+          "refresh_token":refreshToken,
         });        
 
 
